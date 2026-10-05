@@ -6,6 +6,11 @@ const fs = require('fs');
 const Utils = require('./modules/utils');
 const EnglishMessages = require('./lang/en/en');
 
+//For Railway Deployment
+const FILE_PATH = process.env.RAILWAY_ENVIRONMENT
+    ? '/data/file.txt'
+    : 'file.txt';
+
 class Server {
     constructor(port) {
         this.port = port;
@@ -57,7 +62,8 @@ class Server {
     handleWriteFile(parsedUrl, res) {
         const text = parsedUrl.query.text;
 
-        fs.appendFile('file.txt', `${text}\n`, (err) => {
+        //changed 'file.txt' to FILE_PATH for Railway Deployment
+        fs.appendFile(FILE_PATH, `${text}\n`, (err) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('Error writing to file');
@@ -72,7 +78,10 @@ class Server {
     handleReadFile(parsedUrl, res) {
         const fileName = parsedUrl.pathname.replace('/readFile/', '');
 
-        fs.readFile(fileName, 'utf8', (err, data) => {
+        //added for Railway Deployment 
+        const filePath = fileName === 'file.txt' ? FILE_PATH : fileName;
+        //changed fileName to filePath for Railway Deployment
+        fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end(`${fileName} 404 Not Found`);
@@ -84,6 +93,8 @@ class Server {
         });
     }
 }
+//Changed for Railway
+const PORT = process.env.PORT || 8080;
 
-const server = new Server(8080);
+const server = new Server(PORT);
 server.start();
