@@ -6,16 +6,16 @@ const fs = require('fs');
 const Utils = require('./modules/utils');
 const EnglishMessages = require('./lang/en/en');
 
-//For Railway Deployment
-const FILE_PATH = process.env.RAILWAY_ENVIRONMENT
-    ? '/data/file.txt'
-    : 'file.txt';
-
 class Server {
     constructor(port) {
         this.port = port;
         this.utils = new Utils();
         this.messages = new EnglishMessages();
+
+        //For Railway Deployment
+        this.filePath = process.env.RAILWAY_ENVIRONMENT
+            ? '/data/file.txt'
+            : 'file.txt';
     }
 
     start() {
@@ -42,7 +42,7 @@ class Server {
         if (parsedUrl.pathname.startsWith('/readFile/')) {
             this.handleReadFile(parsedUrl, res);
             return;
-    }
+        }
 
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('404 Not Found');
@@ -62,8 +62,8 @@ class Server {
     handleWriteFile(parsedUrl, res) {
         const text = parsedUrl.query.text;
 
-        //changed 'file.txt' to FILE_PATH for Railway Deployment
-        fs.appendFile(FILE_PATH, `${text}\n`, (err) => {
+        //changed 'file.txt' to this.filePath for Railway Deployment
+        fs.appendFile(this.filePath, `${text}\n`, (err) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('Error writing to file');
@@ -79,7 +79,7 @@ class Server {
         const fileName = parsedUrl.pathname.replace('/readFile/', '');
 
         //added for Railway Deployment 
-        const filePath = fileName === 'file.txt' ? FILE_PATH : fileName;
+        const filePath = fileName === 'file.txt' ? this.filePath : fileName;
         //changed fileName to filePath for Railway Deployment
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
